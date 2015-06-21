@@ -89,6 +89,9 @@ void Ground::updateF(Ground ***map, int w, int h)
   
   addF(-forceUp * total_u, -forceDown * total_d);
 
+  if (falling && forceDown > FALL_THRESH)
+    forceDown = FALL_THRESH;
+
   /*
   float subtract = 0;
 

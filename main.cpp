@@ -45,7 +45,7 @@ void destroy_SDL() {
 }
 
 int runGame() {
-  bool running, drawing, paused;
+  bool running, drawing, paused, erasing;
   char const* err_msg = NULL;
   SDL_Window *window;
   SDL_Renderer *renderer;
@@ -61,7 +61,7 @@ int runGame() {
   }
   paused = true;
   running = true;
-  drawing = false;
+  drawing = erasing = false;
 
   window_w = SDL_DEFAULT_WIDTH;
   window_h = SDL_DEFAULT_HEIGHT;
@@ -72,23 +72,9 @@ int runGame() {
   sim = new GroundSim(map_w, map_h);
   cout << "Making map of size " << map_w << "x" << map_h << "." << endl;
 
-  // Junk initial map
-  for (int x = 20; x < map_w - 20; x++) {
-    for (int y = 30; y < 40; y++) {
-      Ground *g = new Ground();
-      sim->setGround(x, y, g);
-    }
-  }
-
-  for (int x = 40; x < 60; x++) {
-    for (int y = 80; y < 90; y++) {
-      Ground *g = new Ground();
-      sim->setGround(x, y, g);
-    }
-  }
-
-  for (int x = 50; x < 100; x++) {
-    for (int y = 110; y < 115; y++) {
+  // Initial map
+  for (int x = 0; x < map_w; x++) {
+    for (int y = 0; y < map_h / 2; y++) {
       Ground *g = new Ground();
       sim->setGround(x, y, g);
     }
@@ -109,6 +95,13 @@ int runGame() {
 	  break;
 	case SDL_MOUSEBUTTONDOWN:
 	  drawing = true;
+	  if (((SDL_MouseButtonEvent*)&event)->button == SDL_BUTTON_LEFT) {
+	    drawing = true;
+	    erasing = false;
+	  } else if (((SDL_MouseButtonEvent*)&event)->button == SDL_BUTTON_RIGHT) {
+	    drawing = true;
+	    erasing = true;
+	  }
 	  break;
 	case SDL_MOUSEBUTTONUP:
 	  drawing = false;
@@ -131,7 +124,10 @@ int runGame() {
 	for (int x = m_x - 3; x <= m_x + 3; x++) {
 	  for (int y = m_y - 3; y <= m_y + 3; y++) {
 	    if (x >= 0 && y >= 0 && x < window_w && y < window_h) {
-	      Ground *g = new Ground();
+	      Ground *g = NULL;
+	      if (!erasing) {
+		g = new Ground();
+	      }
 	      sim->setGround(x / DEFAULT_SCALE, (window_h - y - 1) / DEFAULT_SCALE, g);
 	    }
 	  }

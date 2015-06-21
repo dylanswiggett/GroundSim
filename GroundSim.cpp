@@ -50,7 +50,8 @@ void GroundSim::setGround(int x, int y, Ground *g)
   if (map[x][y] != NULL)
     delete map[x][y];
 
-  g->setP(x, y);
+  if (g != NULL)
+    g->setP(x, y);
   map[x][y] = g;
 }
 
@@ -96,6 +97,18 @@ void GroundSim::draw(int w_w, int w_h, int c_x, int c_y, float scale,
 
   // TODO: Add actual colors.
 
+  float maxF = 0;
+
+  for (int x = c_x; x < w_w / scale + 1 + c_x; x++) {
+    for (int y = c_y; y < w_h / scale + 1 + c_y; y++) {
+      if (x >= 0 && x < w_ && y >= 0 && y < h_) {
+	if (map[x][y] != NULL && map[x][y]->getForceDown() > maxF && !map[x][y]->isFalling()) {
+	  maxF = map[x][y]->getForceDown();
+	}
+      }
+    }
+  }
+
   for (int x = c_x; x < w_w / scale + 1 + c_x; x++) {
     for (int y = c_y; y < w_h / scale + 1 + c_y; y++) {
       if (x >= 0 && x < w_ && y >= 0 && y < h_) {
@@ -114,7 +127,7 @@ void GroundSim::draw(int w_w, int w_h, int c_x, int c_y, float scale,
 	  } else {
 	    SDL_SetRenderDrawColor(renderer,
 				   255,
-				   255 * map[x][y]->getForceDown(),
+				   255 * map[x][y]->getForceDown() / maxF,
 				   map[x][y]->isActive() ? 255 : 0,
 				   255);
 	    SDL_RenderDrawRect(renderer, &rect);
