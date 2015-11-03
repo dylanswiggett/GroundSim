@@ -1,4 +1,6 @@
 #include <iostream>
+#include <algorithm>
+#include <vector>
 
 #include "SDL2/SDL.h"
 
@@ -55,24 +57,26 @@ void GroundSim::setGround(int x, int y, Ground *g)
   map[x][y] = g;
 }
 
+struct pos {
+  int x, y;
+};
+
 void GroundSim::updateForces()
 {
-  // Top->Bottom
+  // TODO: Randomize!
+  vector<pos> positions;
   for (int x = 0; x < w_; x++) {
     for (int y = h_ - 1; y >= 0; y--) {
       if (map[x][y] != NULL) {
-	map[x][y]->updateF(map, w_, h_);
+	pos p = {x, y};
+	positions.push_back(p);
       }
     }
   }
 
-  // Bottom->Top
-  for (int x = 0; x < w_; x++) {
-    for (int y = 0; y < h_; y++) {
-      if (map[x][y] != NULL) {
-	map[x][y]->updateF(map, w_, h_);
-      }
-    }
+  random_shuffle(positions.begin(), positions.end());
+  for (pos p : positions) {
+    map[p.x][p.y]->updateF(map, w_, h_);
   }
 }
 
